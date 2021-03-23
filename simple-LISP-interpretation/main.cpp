@@ -36,6 +36,8 @@ int main() {
 	char ch;
 	while (!file.eof()) {
 		root = new binTreeNode<int>;
+		root->item = NULL;
+		root->left = root->right = nullptr;
 
 		// get target sum
 		file >> targetSum;

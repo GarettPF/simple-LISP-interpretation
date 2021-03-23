@@ -30,40 +30,59 @@ void destroyTree(binTreeNode<type> *);
 */
 template <class type>
 void readLISP(binTreeNode<type> *r, ifstream &infile) {
-	// base case
-	if (r != nullptr) {
-		char ch = 0;
-		string buffer;
-		int iter = 0;
+	char ch;
+	string buffer = "";
 
+
+	// base case
+	if (r == nullptr) return;
+
+	if (r->item == NULL) { // for the root
 		do {
-			infile.get(ch);
+			infile >> ch;
 			if (ch - '0' < 10 && ch - '0' >= 0) {
-				// ch must be a number
 				buffer += ch;
-				iter++;
-			} else if (ch == 40 && !iter) {
-				// ch is a '(' before a number is found
-				ch = 0;
 			}
 		} while (ch != '(' && ch != ')');
 
-		if (ch == ')') {
-			// this means there was no number
-			r->item = NULL;
-			r->left = r->right = nullptr;
-		} else {
-			r->item = atoi(buffer.c_str());
-			r->left = new binTreeNode<type>;
-			r->right = new binTreeNode<type>;
-		}
-
-		readLISP(r->left, infile);
-		readLISP(r->right, infile);
-
-		// get the closing parenthesis and move up the call stack
-		if (ch != ')') infile.get(ch);
+		infile.putback(ch);
+		r->item = atoi(buffer.c_str());
 	}
+
+	// setup left node
+	infile >> ch;
+	if (ch == '(') {
+		// next ch will be number or ')'
+		infile >> ch;
+		if (ch == ')') {
+			r->left = nullptr;
+		} else {
+			infile.putback(ch);
+			r->left = new binTreeNode<int>;
+			infile >> r->left->item;
+		}
+	}
+	readLISP(r->left, infile);
+
+	// setup right node
+	infile >> ch;
+	if (ch == '(') {
+		// next ch will be number or ')'
+		infile >> ch;
+		if (ch == ')') {
+			r->right = nullptr;
+		} else {
+			infile.putback(ch);
+			r->right = new binTreeNode<int>;
+			infile >> r->right->item;
+		}
+	}
+	readLISP(r->right, infile);
+
+	// continue to next ')' for closing the current node
+	do {
+		infile >> ch;
+	} while (ch != ')');
 }
 
 /**
